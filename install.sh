@@ -21,6 +21,13 @@ echo "Using base directory: $BASE_DIR"
 CONFIG_FILE="/etc/plex-grouch.conf"
 > "$CONFIG_FILE"
 
+# Ask user for the Plex API Token
+read -p "Enter your Plex API Token: " PLEX_TOKEN
+PLEX_ENV_FILE="/etc/plex-grouch.env"
+echo "PLEX_TOKEN=$PLEX_TOKEN" | sudo tee "$PLEX_ENV_FILE" > /dev/null
+sudo chmod 600 "$PLEX_ENV_FILE"
+echo "✅ Plex API Token saved in $PLEX_ENV_FILE"
+
 # Iterate through subdirectories and ask user to include them
 echo "Scanning $BASE_DIR for NAS folders..."
 for NAS in "$BASE_DIR"/*/; do
@@ -60,7 +67,6 @@ if [ ! -f "$LOGROTATE_CONFIG" ]; then
 EOF
     echo "✅ Logrotate installed."
 fi
-
 # Copy main script
 sudo cp plex-grouch.sh /usr/local/bin/
 sudo chmod +x /usr/local/bin/plex-grouch.sh
