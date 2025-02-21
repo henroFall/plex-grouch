@@ -35,7 +35,7 @@ done < "$CONFIG_FILE"
 ALL_MOUNTED=true
 for NAS in "${NAS_MOUNTS[@]}"; do
     if [ ! -f "$NAS/test.nas" ]; then
-        echo "$(date): WARNING - $NAS is not mounted." | tee -a "$LOG_FILE"
+        echo "$(date): SCRAM! - Your network sucks! $NAS is not mounted." | tee -a "$LOG_FILE"
         ALL_MOUNTED=false
     fi
 done
@@ -46,9 +46,9 @@ if [ "$ALL_MOUNTED" = true ]; then
     for SECTION_ID in "${SECTIONS[@]}"; do
         RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" -X PUT "http://localhost:32400/library/sections/$SECTION_ID/emptyTrash?X-Plex-Token=$PLEX_TOKEN")
         if [ "$RESPONSE" -eq 200 ]; then
-            echo "$(date): Successfully emptied trash for section ID $SECTION_ID." | tee -a "$LOG_FILE"
+            echo "$(date): GROUCH - Great, you managed to keep your network together for another hour! I just emptied the trash for section ID $SECTION_ID." | tee -a "$LOG_FILE"
         else
-            echo "$(date): ERROR - Failed to empty trash for section ID $SECTION_ID. HTTP response code: $RESPONSE" | tee -a "$LOG_FILE"
+            echo "$(date): SCRAM! - Failed to empty trash for section ID $SECTION_ID. HTTP response code: $RESPONSE" | tee -a "$LOG_FILE"
         fi
     done
 else
