@@ -10,12 +10,12 @@
 
 ## ⚡ Installation (One-Liner)
 ```bash
-git clone https://github.com/henroFall/plex-grouch.git && cd plex-grouch && sudo ./install.sh
+git clone https://github.com/henroFall/plex-grouch.git && cd plex-grouch && sudo chmod +x ./install.sh && sudo ./install.sh
 ```
 
 If you are already running as `root`, you can omit `sudo`:
 ```bash
-git clone https://github.com/henroFall/plex-grouch.git && cd plex-grouch && ./install.sh
+git clone https://github.com/henroFall/plex-grouch.git && cd plex-grouch && chmod +x ./install.sh && ./install.sh
 ```
 
 ## 🔑 Getting Your Plex API Token
@@ -53,10 +53,10 @@ Plex-Grouch requires a **Plex API Token** to interact with your Plex server. Fol
 ## 🛑 Uninstall
 To completely remove Plex-Grouch, run this one-liner:
 ```bash
-wget https://raw.githubusercontent.com/henroFall/plex-grouch/main/uninstall.sh && sudo bash uninstall.sh
+wget https://raw.githubusercontent.com/henroFall/plex-grouch/main/uninstall.sh && sudo chmod +x uninstall.sh && sudo bash uninstall.sh
 ```
 
 If running as root:
 ```bash
-wget https://raw.githubusercontent.com/YOUR_USERNAME/plex-grouch/main/uninstall.sh && bash uninstall.sh
+wget https://raw.githubusercontent.com/YOUR_USERNAME/plex-grouch/main/uninstall.sh && chmod +x uninstall.sh && bash uninstall.sh
 ```
