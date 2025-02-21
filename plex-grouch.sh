@@ -34,7 +34,8 @@ done
 # If all NAS devices are connected, clean Plex trash
 if $ALL_CONNECTED; then
     echo "$(date): Amazing! You managed to keep your network together! The trash is all mine!" | tee -a "$LOG_FILE"
-    curl -X PUT "http://localhost:32400/library/clean?X-Plex-Token=$PLEX_TOKEN"
+    curl -X PUT "http://localhost:32400/library/sections/1/emptyTrash?X-Plex-Token=$PLEX_TOKEN"
+	curl -X PUT "http://localhost:32400/library/sections/2/emptyTrash?X-Plex-Token=$PLEX_TOKEN"
 else
     echo "$(date): Keep your junk out of my trash can! Skipping Plex trash cleanup due to missing NAS devices." | tee -a "$LOG_FILE"
 fi
