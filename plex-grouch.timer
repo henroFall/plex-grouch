@@ -1,0 +1,9 @@
+[Unit]
+Description=Oscar the Plex Grouch - Hourly Cleanup
+
+[Timer]
+OnCalendar=hourly
+Persistent=true
+
+[Install]
+WantedBy=timers.target
