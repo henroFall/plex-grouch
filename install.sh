@@ -38,6 +38,44 @@ echo "PLEX_TOKEN=$PLEX_TOKEN" | sudo tee "$PLEX_ENV_FILE" > /dev/null
 sudo chmod 600 "$PLEX_ENV_FILE"
 echo "✅ Plex API Token saved in $PLEX_ENV_FILE"
 
+# Retrieve Plex library sections
+echo "Retrieving Plex library sections..."
+SECTIONS_XML=$(curl -s "http://localhost:32400/library/sections?X-Plex-Token=$PLEX_TOKEN")
+if [[ -z "$SECTIONS_XML" ]]; then
+    echo "ERROR: Unable to retrieve library sections. Please check your Plex Token and server status."
+    exit 1
+fi
+
+# Parse and display sections
+echo "Available Plex library sections:"
+echo "$SECTIONS_XML" | grep -oP 'key="\K\d+' | while read -r key; do
+    title=$(echo "$SECTIONS_XML" | grep -oP "key=\"$key\".*?title=\"\K[^\"]+")
+    echo "[$key] $title"
+done
+
+# Prompt user to select sections
+SELECTED_SECTIONS=()
+while true; do
+    read -rp "Enter the key of the section to monitor (or 'done' to finish): " SECTION_KEY
+    if [[ "$SECTION_KEY" == "done" ]]; then
+        break
+    elif [[ "$SECTIONS_XML" == *"key=\"$SECTION_KEY\""* ]]; then
+        SELECTED_SECTIONS+=("$SECTION_KEY")
+        echo "✅ Section $SECTION_KEY added."
+    else
+        echo "❌ Invalid section key. Please try again."
+    fi
+done
+
+# Save selected sections to config
+if [ ${#SELECTED_SECTIONS[@]} -eq 0 ]; then
+    echo "ERROR: No library sections selected. Exiting."
+    exit 1
+fi
+
+echo "Selected sections: ${SELECTED_SECTIONS[*]}"
+echo "SECTIONS=${SELECTED_SECTIONS[*]}" | sudo tee -a "$CONFIG_FILE" > /dev/null
+
 # Iterate through subdirectories and ask user to include them
 echo "Scanning $BASE_DIR for NAS folders..."
 for NAS in "$BASE_DIR"/*/; do
