@@ -3,35 +3,24 @@
 # Configuration file storing NAS directories
 CONFIG_FILE="/etc/plex-grouch.conf"
 LOG_FILE="/var/log/plex-grouch.log"
-LOGROTATE_CONFIG="/etc/logrotate.d/plex-grouch"
+PLEX_ENV_FILE="/etc/plex-grouch.env"
 
-# Read NAS mount points from config file
-if [ ! -f "$CONFIG_FILE" ]; then
-    echo "$(date): SCRAM! Config file not found at $CONFIG_FILE. No cleanup for you!" | tee -a "$LOG_FILE"
+# Ensure Plex API Token exists
+if [ ! -f "$PLEX_ENV_FILE" ]; then
+    echo "$(date): ERROR - Plex API Token file not found at $PLEX_ENV_FILE" | tee -a "$LOG_FILE"
     exit 1
 fi
 
-# Ensure logrotate configuration exists
-if [ ! -f "$LOGROTATE_CONFIG" ]; then
-    echo "Creating logrotate configuration for Plex-Grouch..."
-    cat <<EOF | sudo tee "$LOGROTATE_CONFIG" > /dev/null
-$LOG_FILE {
-    daily
-    rotate 7
-    compress
-    missingok
-    notifempty
-    create 644 root root
-}
-EOF
-    echo "Logrotate configuration installed."
+# Load Plex API Token
+source "$PLEX_ENV_FILE"
+
+# Read NAS mount points from config file
+if [ ! -f "$CONFIG_FILE" ]; then
+    echo "$(date): ERROR - Config file not found at $CONFIG_FILE" | tee -a "$LOG_FILE"
+    exit 1
 fi
 
-# Read NAS mount points into an array
 mapfile -t NAS_MOUNTS < "$CONFIG_FILE"
-
-# Plex API Token (Replace with your actual token)
-PLEX_TOKEN="YOUR_PLEX_TOKEN"
 
 # Check for the presence of test.nas in all NAS mount points
 ALL_CONNECTED=true

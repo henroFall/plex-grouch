@@ -17,6 +17,7 @@ sudo rm -f /usr/local/bin/plex-grouch.sh
 sudo rm -f /etc/plex-grouch.conf
 sudo rm -f /var/log/plex-grouch.log
 sudo rm -f /etc/logrotate.d/plex-grouch
+sudo rm -f /etc/plex-grouch.env
 
 # Reload systemd daemon
 sudo systemctl daemon-reload

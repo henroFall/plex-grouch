@@ -1,12 +1,14 @@
 #!/bin/bash
 
+set -e  # Exit immediately if a command exits with a non-zero status
+
 echo "🐸 Installing Plex-Grouch... Oscar is getting ready to take out the trash!"
 
 # Default base directory
 DEFAULT_BASE_DIR="/mnt"
 
 # Ask the user where their NAS directories are located
-read -p "Enter base directory for NAS mounts (default: $DEFAULT_BASE_DIR): " BASE_DIR
+read -rp "Enter base directory for NAS mounts (default: $DEFAULT_BASE_DIR): " BASE_DIR
 BASE_DIR="${BASE_DIR:-$DEFAULT_BASE_DIR}"
 
 # Verify the directory exists
@@ -19,10 +21,18 @@ echo "Using base directory: $BASE_DIR"
 
 # Create or reset the config file
 CONFIG_FILE="/etc/plex-grouch.conf"
+sudo touch "$CONFIG_FILE"
+sudo chmod 644 "$CONFIG_FILE"
 > "$CONFIG_FILE"
 
+# Create or reset the log file
+LOG_FILE="/var/log/plex-grouch.log"
+sudo touch "$LOG_FILE"
+sudo chmod 644 "$LOG_FILE"
+echo "✅ Log file created at $LOG_FILE"
+
 # Ask user for the Plex API Token
-read -p "Enter your Plex API Token: " PLEX_TOKEN
+read -rp "Enter your Plex API Token: " PLEX_TOKEN
 PLEX_ENV_FILE="/etc/plex-grouch.env"
 echo "PLEX_TOKEN=$PLEX_TOKEN" | sudo tee "$PLEX_ENV_FILE" > /dev/null
 sudo chmod 600 "$PLEX_ENV_FILE"
@@ -35,10 +45,10 @@ for NAS in "$BASE_DIR"/*/; do
     NAS=${NAS%/}  # Remove trailing slash
 
     # Ask user whether to include this directory
-    read -p "Include $NAS for monitoring? (y/n): " response
+    read -rp "Include $NAS for monitoring? (y/n): " response
     if [[ "$response" =~ ^[Yy]$ ]]; then
-        echo "$NAS" >> "$CONFIG_FILE"
-        touch "$NAS/test.nas"  # Ensure test.nas exists
+        echo "$NAS" | sudo tee -a "$CONFIG_FILE" > /dev/null
+        sudo touch "$NAS/test.nas"  # Ensure test.nas exists
         echo "✅ Added $NAS"
     else
         echo "❌ Skipped $NAS"
@@ -67,13 +77,16 @@ if [ ! -f "$LOGROTATE_CONFIG" ]; then
 EOF
     echo "✅ Logrotate installed."
 fi
+
 # Copy main script
 sudo cp plex-grouch.sh /usr/local/bin/
 sudo chmod +x /usr/local/bin/plex-grouch.sh
 
 # Copy systemd service files
 sudo cp plex-grouch.service /etc/systemd/system/
+sudo chmod 644 /etc/systemd/system/plex-grouch.service
 sudo cp plex-grouch.timer /etc/systemd/system/
+sudo chmod 644 /etc/systemd/system/plex-grouch.timer
 
 # Reload systemd and enable the timer
 sudo systemctl daemon-reload
