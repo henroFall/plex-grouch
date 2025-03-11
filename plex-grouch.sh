@@ -28,7 +28,8 @@ while IFS= read -r line; do
         IFS=' ' read -r -a SECTIONS <<< "${line#SECTIONS=}"
     else
         NAS_MOUNTS+=("$line")
-done < "$CONFIG_FILE"
+    fi  # <-- FIXED: Added fi to properly close the if statement
+done < "$CONFIG_FILE"  # <-- FIXED: Moved done outside of the if statement
 
 # Check if all NAS directories are mounted
 ALL_MOUNTED=true
