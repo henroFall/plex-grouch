@@ -3,10 +3,10 @@ Description=Oscar the Plex Grouch - NAS Trash Cleaner
 After=network.target
 
 [Service]
-Type=simple
+Type=oneshot
 ExecStart=/usr/local/bin/plex-grouch.sh
-Restart=always
 User=plex
+RemainAfterExit=no
 
 [Install]
 WantedBy=multi-user.target
