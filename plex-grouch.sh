@@ -40,17 +40,31 @@ for NAS in "${NAS_MOUNTS[@]}"; do
     fi
 done
 
-# If all NAS directories are mounted, proceed to empty trash
+# If all NAS directories are mounted, proceed to scan then empty trash
 if [ "$ALL_MOUNTED" = true ]; then
-    echo "$(date): Well, good! Everything is where it should be. I will empty the trash now." | tee -a "$LOG_FILE"
-    for SECTION_ID in "${SECTIONS[@]}"; do
-        RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" -X PUT "http://localhost:32400/library/sections/$SECTION_ID/emptyTrash?X-Plex-Token=$PLEX_TOKEN")
-        if [ "$RESPONSE" -eq 200 ]; then
-            echo "$(date): GROUCH - Great, you managed to keep your network together for another hour! I just emptied the trash for section ID $SECTION_ID." | tee -a "$LOG_FILE"
-        else
-            echo "$(date): ERROR - SCRAM! Failed to empty trash for section ID $SECTION_ID. HTTP response code: $RESPONSE" | tee -a "$LOG_FILE"
-        fi
-    done
+  echo "$(date): GROUCH - Well, good! Everything is where it should be. I'll scan first, then empty the trash." | tee -a "$LOG_FILE"
+
+  # Start scanning libraries in background
+  for SECTION_ID in "${SECTIONS[@]}"; do
+    echo "$(date): GROUCH - Kicking off scan for section ID $SECTION_ID." | tee -a "$LOG_FILE"
+    curl -s -X POST "http://localhost:32400/library/sections/$SECTION_ID/refresh?X-Plex-Token=$PLEX_TOKEN" &
+  done
+
+  # Wait for all background scan curl jobs to finish
+  wait
+  echo "$(date): GROUCH - All scan requests completed. Waiting 2 more minutes to let Plex do its thing..." | tee -a "$LOG_FILE"
+  sleep 120
+
+  # Now empty the trash
+  for SECTION_ID in "${SECTIONS[@]}"; do
+    RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" -X PUT "http://localhost:32400/library/sections/$SECTION_ID/emptyTrash?X-Plex-Token=$PLEX_TOKEN")
+    if [ "$RESPONSE" -eq 200 ]; then
+      echo "$(date): GROUCH - Great, you managed to keep your network together for another hour! I just emptied the trash for section ID $SECTION_ID." | tee -a "$LOG_FILE"
+    else
+      echo "$(date): ERROR - SCRAM! Failed to empty trash for section ID $SECTION_ID. HTTP response code: $RESPONSE" | tee -a "$LOG_FILE"
+    fi
+  done
+
 else
     echo "$(date): Not all NAS directories are mounted. Skipping trash emptying. SCRAM!" | tee -a "$LOG_FILE"
 fi
